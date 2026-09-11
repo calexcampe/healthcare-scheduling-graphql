@@ -1,0 +1,42 @@
+type Query {
+    "Todas as consultas de um paciente (histórico completo)"
+    patientHistory(patientId: ID!): [Appointment!]!
+    "Somente as consultas futuras de um paciente"
+    futureAppointments(patientId: ID!): [Appointment!]!
+}
+
+type Mutation {
+    "Registra uma nova consulta (somente ENFERMEIRO)"
+    createAppointment(input: AppointmentInput!): Appointment!
+    "Edita uma consulta existente (somente MEDICO)"
+    updateAppointment(id: ID!, input: AppointmentInput!): Appointment!
+}
+
+type Appointment {
+    id: ID!
+    patient: Patient!
+    professionalName: String!
+    dateTime: String!
+    description: String
+    status: AppointmentStatus!
+}
+
+type Patient {
+    id: ID!
+    name: String!
+    email: String!
+}
+
+enum AppointmentStatus {
+    AGENDADA
+    REALIZADA
+    CANCELADA
+}
+
+input AppointmentInput {
+    patientId: ID!
+    professionalName: String
+    dateTime: String
+    description: String
+    status: AppointmentStatus
+}

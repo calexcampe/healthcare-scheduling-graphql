@@ -1,0 +1,235 @@
+{
+  "info": {
+    "name": "Tech Challenge Fase 3 - Backend Hospitalar",
+    "description": "Collection de exemplos HTTP/GraphQL para o scheduling-service (porta 8081). Usuarios de teste: medico1/enfermeiro1/paciente1/paciente2, senha 'senha123'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth - Login valido (paciente1)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "paciente1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query { patientHistory(patientId: 1) { id professionalName dateTime status } }",
+            "variables": ""
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Auth - Sem credenciais (401 esperado)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query { patientHistory(patientId: 1) { id } }",
+            "variables": ""
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Historico do paciente (patientHistory)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "medico1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query PatientHistory($patientId: ID!) { patientHistory(patientId: $patientId) { id professionalName dateTime description status } }",
+            "variables": "{ \"patientId\": 1 }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Consultas futuras (futureAppointments)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "medico1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query FutureAppointments($patientId: ID!) { futureAppointments(patientId: $patientId) { id professionalName dateTime status } }",
+            "variables": "{ \"patientId\": 1 }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Enfermeiro registra nova consulta (createAppointment)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "enfermeiro1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateAppointment($input: AppointmentInput!) { createAppointment(input: $input) { id professionalName dateTime status } }",
+            "variables": "{ \"input\": { \"patientId\": 1, \"professionalName\": \"Dr. Carlos Lima\", \"dateTime\": \"2026-12-01T09:00:00\", \"description\": \"Consulta de retorno\" } }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Medico edita consulta (updateAppointment)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "medico1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateAppointment($id: ID!, $input: AppointmentInput!) { updateAppointment(id: $id, input: $input) { id status description } }",
+            "variables": "{ \"id\": 1, \"input\": { \"patientId\": 1, \"status\": \"REALIZADA\", \"description\": \"Consulta concluida\" } }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 - RBAC - Paciente tenta acessar historico de outro paciente (FORBIDDEN esperado)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "paciente1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query { patientHistory(patientId: 2) { id } }",
+            "variables": ""
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 - RBAC - Paciente tenta criar consulta (FORBIDDEN esperado)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "paciente1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation ($input: AppointmentInput!) { createAppointment(input: $input) { id } }",
+            "variables": "{ \"input\": { \"patientId\": 1, \"professionalName\": \"Dr. X\", \"dateTime\": \"2026-12-01T09:00:00\" } }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Medico registra nova consulta (createAppointment)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "medico1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation ($input: AppointmentInput!) { createAppointment(input: $input) { id professionalName dateTime status } }",
+            "variables": "{ \"input\": { \"patientId\": 1, \"professionalName\": \"Dr. X\", \"dateTime\": \"2026-12-01T09:00:00\" } }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10 - Enfermeiro edita consulta (updateAppointment)",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "enfermeiro1" },
+            { "key": "password", "value": "senha123" }
+          ]
+        },
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation ($id: ID!, $input: AppointmentInput!) { updateAppointment(id: $id, input: $input) { id status description } }",
+            "variables": "{ \"id\": 1, \"input\": { \"patientId\": 1, \"status\": \"CANCELADA\" } }"
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11 - H2 Console (dev)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/h2-console"
+      },
+      "response": []
+    }
+  ]
+}
