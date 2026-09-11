@@ -1,4 +1,4 @@
-# Tech Challenge Fase 3 - Backend Hospitalar
+# Backend Hospitalar
 
 Backend hospitalar para gerenciamento de consultas, histórico de pacientes e notificações, com autenticação/autorização (RBAC), GraphQL e comunicação assíncrona via RabbitMQ.
 
